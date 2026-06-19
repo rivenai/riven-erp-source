@@ -1,32 +1,31 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ODOO_DIR="${ODOO_DIR:-/opt/odoo}"
-ASSETS_DIR="${ASSETS_DIR:-/opt/brand-patches/assets}"
-
-echo "Applying Riven asset patches from ${ASSETS_DIR} ..."
-
-declare -A MAP=(
-  ["favicon.ico"]="$ODOO_DIR/addons/web/static/img/favicon.ico"
-  ["logo.png"]="$ODOO_DIR/addons/web/static/img/logo.png"
-  ["logo-login.png"]="$ODOO_DIR/addons/web/static/img/logo-inverse.png"
-  ["logo-email.png"]="$ODOO_DIR/addons/web/static/img/logo-email.png"
-  ["og-image.png"]="$ODOO_DIR/addons/web/static/img/og_image.png"
-)
-
-for asset in "${!MAP[@]}"; do
-  src="$ASSETS_DIR/$asset"
-  dst="${MAP[$asset]}"
-  if [ -f "$src" ]; then
-    mkdir -p "$(dirname "$dst")"
-    if [ "$src" -ef "$dst" ]; then
-      echo "Asset already in place: $dst"
-    else
-      cp -v "$src" "$dst"
-    fi
-  else
-    echo "Skipping missing asset: $src"
+ODOO_DIR=""
+for candidate in /usr/lib/python3/dist-packages/odoo /usr/lib/python3/site-packages/odoo /opt/odoo; do
+  if [ -d "$candidate" ]; then
+    ODOO_DIR="$candidate"
+    break
   fi
 done
+
+BRAND_DIR="/opt/brand-patches/assets"
+
+if [ -z "$ODOO_DIR" ]; then
+  echo "WARNING: Could not find Odoo installation directory. Skipping asset patches."
+  exit 0
+fi
+
+echo "Applying Riven asset patches to ${ODOO_DIR} ..."
+
+if [ -f "$BRAND_DIR/favicon.ico" ]; then
+  find "$ODOO_DIR" -name "favicon.ico" -exec cp "$BRAND_DIR/favicon.ico" {} \; 2>/dev/null || true
+fi
+
+if [ -f "$BRAND_DIR/logo.png" ]; then
+  find "$ODOO_DIR" -path "*/web/static/img/*" -type f \( -name "logo*.png" -o -name "logo*.svg" -o -name "nologo*.png" \) | while read -r img; do
+    cp "$BRAND_DIR/logo.png" "$img" 2>/dev/null || true
+  done
+fi
 
 echo "Asset patches applied."
