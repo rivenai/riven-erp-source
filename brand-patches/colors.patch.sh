@@ -22,10 +22,13 @@ find "$ODOO_DIR" -type f \( \
   -name "*.css" -o -name "*.scss" -o -name "*.less" -o -name "*.xml" -o \
   -name "*.html" -o -name "*.js" -o -name "*.mjs" -o -name "*.svg" \
 \) -print0 | xargs -0 perl -pi -e '
-  s/#71639e/#008173/g;
-  s/#875a7b/#008173/g;
-  s/#7c7bad/#008173/g;
-  s/#00a86b/#008173/g;
+  s/#71639e/#008173/gi;
+  s/#875a7b/#008173/gi;
+  s/#7c7bad/#008173/gi;
+  s/#68465f/#008173/gi;
+  s/#65435c/#008173/gi;
+  s/#3d2938/#008173/gi;
+  s/#00a86b/#008173/gi;
 ' 2>/dev/null || true
 
 echo "Color patches applied."
