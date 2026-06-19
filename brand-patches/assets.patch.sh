@@ -19,7 +19,11 @@ for asset in "${!MAP[@]}"; do
   dst="${MAP[$asset]}"
   if [ -f "$src" ]; then
     mkdir -p "$(dirname "$dst")"
-    cp -v "$src" "$dst"
+    if [ "$src" -ef "$dst" ]; then
+      echo "Asset already in place: $dst"
+    else
+      cp -v "$src" "$dst"
+    fi
   else
     echo "Skipping missing asset: $src"
   fi
