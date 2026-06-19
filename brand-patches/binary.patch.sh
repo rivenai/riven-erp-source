@@ -21,10 +21,13 @@ if [ -f "$RIVEN_BIN" ] && [ ! -e "$ODOO_BIN" ]; then
 fi
 
 # Update the official Odoo entrypoint to invoke the Riven-branded binary.
+# Only rewrite the actual `exec odoo ...` invocations so the container's CMD
+# (`odoo`) still matches the case statement and the default Postgres credentials
+# in the entrypoint are left intact.
 if [ -f "$ENTRYPOINT" ]; then
   echo "Patching ${ENTRYPOINT} to use riven-erp ..."
   sed -i \
-    -e 's|\bodoo\b|riven-erp|g' \
+    -e 's|\bexec odoo\b|exec riven-erp|g' \
     -e 's|ODOO_RC|RIVEN_ERP_RC|g' \
     "$ENTRYPOINT" || true
 fi
@@ -43,9 +46,12 @@ if [ -f "/etc/odoo/riven-erp.conf" ]; then
     "/etc/odoo/riven-erp.conf" || true
 fi
 
-# Ensure the Riven log and data directories exist.
+# Ensure the Riven log and data directories exist and are writable by the
+# `odoo` runtime user inherited from the upstream image.
 mkdir -p /var/log/riven-erp /var/lib/riven-erp
 chmod 755 /var/log/riven-erp /var/lib/riven-erp
+chown -R odoo:odoo /var/log/riven-erp /var/lib/riven-erp /etc/odoo/riven-erp.conf 2>/dev/null || \
+  chown -R odoo /var/log/riven-erp /var/lib/riven-erp /etc/odoo/riven-erp.conf || true
 
 # Ensure the container environment prefers the Riven config path.  This is
 # read by the official entrypoint to locate the config file.
