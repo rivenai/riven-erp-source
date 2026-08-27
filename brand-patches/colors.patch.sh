@@ -16,19 +16,20 @@ fi
 
 echo "Applying Riven color patches to ${ODOO_DIR} ..."
 
-# Canonical Riven brand tokens (see brand/v1/tokens.css).
-# Primary: Riven Teal #008173
+# Canonical Riven brand tokens (Brand Guide 0.0.3 Alpha).
+# Primary: Riven Magenta #EC008C (D009 teal #008173 retired 2026-08-27, owner ruling)
 find "$ODOO_DIR" -type f \( \
   -name "*.css" -o -name "*.scss" -o -name "*.less" -o -name "*.xml" -o \
   -name "*.html" -o -name "*.js" -o -name "*.mjs" -o -name "*.svg" \
 \) -print0 | xargs -0 perl -pi -e '
-  s/#71639e/#008173/gi;
-  s/#875a7b/#008173/gi;
-  s/#7c7bad/#008173/gi;
-  s/#68465f/#008173/gi;
-  s/#65435c/#008173/gi;
-  s/#3d2938/#008173/gi;
-  s/#00a86b/#008173/gi;
+  s/#71639e/#EC008C/gi;
+  s/#875a7b/#EC008C/gi;
+  s/#7c7bad/#EC008C/gi;
+  s/#68465f/#EC008C/gi;
+  s/#65435c/#EC008C/gi;
+  s/#3d2938/#EC008C/gi;
+  s/#00a86b/#EC008C/gi;
+  s/#008173/#EC008C/gi;
 ' 2>/dev/null || true
 
 echo "Color patches applied."
