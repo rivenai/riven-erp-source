@@ -1,0 +1,61 @@
+# Riven ERP enterprise layer — canonical builder.
+#
+# Builds the full enterprise image from the shipped community base plus the
+# rivenai/riven-erp-enterprise tree. This ports the proven 0.0.03 VM build
+# (build-00003/Dockerfile.v6) into the repo so enterprise builds are
+# reproducible and versioned here instead of assembled on the VM by hand.
+#
+# Build context requirements:
+#   enterprise-src.tar.gz            — tarball of the enterprise addons tree
+#                                      (from rivenai/riven-erp-enterprise, the
+#                                      736-module tree; commit pinned in the
+#                                      release notes of the tag being built)
+#   brand-patches/riven.enterprise.patch.sh — reidentification patch (in repo)
+#
+# Build:
+#   docker build -f Dockerfile.enterprise \
+#     -t rivenai/riven-erp:pes-bridge-<version> .
+#
+# Known gap (future 0.1.0): the base community reidentification
+# (riven.reident.patch.sh, the odoo->riven_erp package rename) is NOT in this
+# repo — it only survives inside the shipped base image. Until it is
+# reconstructed, this Dockerfile pins the shipped base rather than rebuilding
+# it from odoo:${ODOO_VERSION}.
+ARG BASE_IMAGE=rivenai/riven-erp:pes-bridge-0.0.02
+ARG RIVEN_RELEASE=0.0.04
+FROM ${BASE_IMAGE}
+USER root
+
+COPY enterprise-src.tar.gz /tmp/enterprise-src.tar.gz
+COPY brand-patches/riven.enterprise.patch.sh /opt/brand-patches/riven.enterprise.patch.sh
+
+# 1. Lay down the enterprise tree inside the renamed package root so
+#    'from riven_erp.addons.X import Y' imports resolve (modules.py
+#    initialize_sys_path appends each addons_path entry to riven_erp.addons.__path__).
+# 2. Reidentify the tree with the same rules as the 0.0.02 community rename.
+# 3. Bump the release marker.
+# 4. Append the enterprise path to the in-image config.
+# 5. XML root-tag repair for both trees (covers attributed roots like
+#    <odoo noupdate="1"> that the reident rule missed in 0.0.03).
+RUN DP=/usr/lib/python3/dist-packages \
+ && mkdir -p $DP/riven_erp/enterprise-addons \
+ && tar -xzf /tmp/enterprise-src.tar.gz -C $DP/riven_erp/enterprise-addons \
+ && chmod +x /opt/brand-patches/riven.enterprise.patch.sh \
+ && bash /opt/brand-patches/riven.enterprise.patch.sh $DP/riven_erp/enterprise-addons \
+ && rm -f /tmp/enterprise-src.tar.gz \
+ && sed -i "s/'0\.0\.02'/'${RIVEN_RELEASE}'/g" $DP/riven_erp/release.py \
+ && echo "${RIVEN_RELEASE}" > /opt/riven-release \
+ && if [ -f /etc/odoo/riven-erp.conf ] && grep -q '^addons_path' /etc/odoo/riven-erp.conf; then \
+        sed -i 's@^addons_path = \(.*\)@addons_path = \1,'"$DP"'/riven_erp/enterprise-addons@' /etc/odoo/riven-erp.conf; \
+    fi \
+ && find $DP/riven_erp/addons $DP/riven_erp/enterprise-addons -type f -name '*.xml' -print0 \
+    | xargs -0 -n 200 sed -i -e 's@^<riven @<riven_erp @' -e 's@^</riven>$@</riven_erp>@'
+
+# Fix the RelaxNG schema the community reidentification missed: import_xml.rng
+# still declared <odoo>/<openerp> roots while convert.py accepts <riven_erp>.
+RUN DP=/usr/lib/python3/dist-packages \
+ && sed -i -e 's@odoo@riven_erp@g' -e 's@openerp@riven_erp@g' $DP/riven_erp/import_xml.rng \
+ && echo "import_xml.rng schema root renamed"
+
+ENV RIVEN_ERP_ENTERPRISE_ADDONS=/usr/lib/python3/dist-packages/riven_erp/enterprise-addons
+USER odoo
