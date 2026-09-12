@@ -57,5 +57,21 @@ RUN DP=/usr/lib/python3/dist-packages \
  && sed -i -e 's@odoo@riven_erp@g' -e 's@openerp@riven_erp@g' $DP/riven_erp/import_xml.rng \
  && echo "import_xml.rng schema root renamed"
 
+# 0.0.04 layer: IoT modules + python3-google-auth (whatsapp/social stack dep).
+# Build context also requires:
+#   iot-src.tar.gz            — the enterprise `iot` app module (odoo/enterprise
+#                               19.0, already reidentified)
+#   iot-community-src.tar.gz  — iot_base, iot_box_image, iot_drivers
+#                               (odoo/odoo 19.0 addons, already reidentified;
+#                               iot_box_image/iot_drivers ship installable:False
+#                               upstream — box-hardware modules)
+RUN apt-get update -qq && apt-get install -y -qq python3-google-auth \
+ && rm -rf /var/lib/apt/lists/*
+COPY iot-src.tar.gz iot-community-src.tar.gz /tmp/
+RUN DP=/usr/lib/python3/dist-packages \
+ && tar -xzf /tmp/iot-src.tar.gz -C $DP/riven_erp/enterprise-addons \
+ && tar -xzf /tmp/iot-community-src.tar.gz -C $DP/riven_erp/addons \
+ && rm -f /tmp/iot-src.tar.gz /tmp/iot-community-src.tar.gz
+
 ENV RIVEN_ERP_ENTERPRISE_ADDONS=/usr/lib/python3/dist-packages/riven_erp/enterprise-addons
 USER odoo
