@@ -1,0 +1,333 @@
+<riven_erp>
+    <!-- Portal home tiles -->
+    <template id="portal_my_home_pes" inherit_id="portal.portal_my_home"
+              name="PES Portal Tiles">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <div class="o_portal_docs_list_links d-flex flex-column gap-1 pb-3 pt-3 flex-grow-1" groups="base.group_portal">
+                <a class="o_portal_doc_tile btn btn-light border d-flex align-items-center justify-content-between" href="/my/support">
+                    <span class="fw-bold">Support Tickets</span>
+                    <span class="text-muted">Open a ticket, track status</span>
+                </a>
+                <a class="o_portal_doc_tile btn btn-light border d-flex align-items-center justify-content-between" href="/my/returns">
+                    <span class="fw-bold">Returns (RMA)</span>
+                    <span class="text-muted">Request a return authorization</span>
+                </a>
+                <a class="o_portal_doc_tile btn btn-light border d-flex align-items-center justify-content-between" href="/my/warranty">
+                    <span class="fw-bold">Warranty Registrations</span>
+                    <span class="text-muted">Register products, view coverage</span>
+                </a>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- ===== Support: my tickets ===== -->
+    <template id="portal_my_support" name="My Support Tickets">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-set="page_name" t-value="'support'"/>
+            <div class="container pt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h1 class="fw-bold">Support Tickets</h1>
+                    <a class="btn btn-primary" href="/my/support/new" role="button">New Ticket</a>
+                </div>
+                <t t-if="tickets">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Ticket #</th>
+                                    <th>Subject</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="tickets" t-as="ticket">
+                                    <tr>
+                                        <td><a t-attf-href="/my/support/#{ticket.id}"><t t-esc="ticket.name"/></a></td>
+                                        <td><t t-esc="ticket.subject"/></td>
+                                        <td><t t-esc="dict(ticket._fields['category']._description_selection(request.env)).get(ticket.category, '')"/></td>
+                                        <td>
+                                            <span class="badge"
+                                                  t-attf-class="#{ticket.state in ['resolved', 'closed'] and 'text-bg-success' or (ticket.state == 'new' and 'text-bg-info' or 'text-bg-warning')}">
+                                                <t t-esc="dict(ticket._fields['state']._description_selection(request.env)).get(ticket.state, ticket.state)"/>
+                                            </span>
+                                        </td>
+                                        <td><span t-field="ticket.create_date" t-options='{"widget": "date"}'/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="alert alert-info">
+                        You have no support tickets yet. Need help with an order, product, or delivery?
+                        <a href="/my/support/new" class="alert-link">Open a ticket</a>.
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <!-- ===== Support: new ticket form ===== -->
+    <template id="portal_support_new" name="New Support Ticket">
+        <t t-call="portal.portal_layout">
+            <div class="container pt-4" style="max-width: 760px;">
+                <h1 class="fw-bold mb-3">Open a Support Ticket</h1>
+                <form action="/my/support/submit" method="post">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <div class="mb-3">
+                        <label class="form-label" for="subject">Subject</label>
+                        <input type="text" class="form-control" id="subject" name="subject" required="required"/>
+                    </div>
+                    <div class="row">
+                        <div class="mb-3 col-md-6">
+                            <label class="form-label" for="category">Category</label>
+                            <select class="form-select" id="category" name="category">
+                                <option value="order">Order Issue</option>
+                                <option value="product">Product Question</option>
+                                <option value="delivery">Delivery / Shipping</option>
+                                <option value="invoice">Invoice / Billing</option>
+                                <option value="warranty">Warranty Claim</option>
+                                <option value="other" selected="selected">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 col-md-6">
+                            <label class="form-label" for="priority">Priority</label>
+                            <select class="form-select" id="priority" name="priority">
+                                <option value="0">Low</option>
+                                <option value="1" selected="selected">Normal</option>
+                                <option value="2">High</option>
+                                <option value="3">Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3" t-if="orders">
+                        <label class="form-label" for="sale_order_id">Related Order (optional)</label>
+                        <select class="form-select" id="sale_order_id" name="sale_order_id">
+                            <option value="">-- None --</option>
+                            <t t-foreach="orders" t-as="order">
+                                <option t-att-value="order.id"><t t-esc="order.name"/></option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="description">Describe the issue</label>
+                        <textarea class="form-control" id="description" name="description" rows="6"/>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Ticket</button>
+                    <a href="/my/support" class="btn btn-secondary ms-2">Cancel</a>
+                </form>
+            </div>
+        </t>
+    </template>
+
+    <!-- ===== Support: ticket detail ===== -->
+    <template id="portal_support_detail" name="Support Ticket Detail">
+        <t t-call="portal.portal_layout">
+            <div class="container pt-4" style="max-width: 900px;">
+                <a href="/my/support" class="text-decoration-none">&#8592; All Tickets</a>
+                <h1 class="fw-bold mt-2"><t t-esc="ticket.name"/>: <t t-esc="ticket.subject"/></h1>
+                <div class="mb-2">
+                    <span class="badge"
+                          t-attf-class="#{ticket.state in ['resolved', 'closed'] and 'text-bg-success' or (ticket.state == 'new' and 'text-bg-info' or 'text-bg-warning')}">
+                        <t t-esc="dict(ticket._fields['state']._description_selection(request.env)).get(ticket.state, ticket.state)"/>
+                    </span>
+                    <span class="text-muted ms-2">
+                        Opened <span t-field="ticket.create_date" t-options='{"widget": "datetime"}'/>
+                    </span>
+                </div>
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <t t-if="ticket.description">
+                            <div t-field="ticket.description"/>
+                        </t>
+                        <t t-else="">
+                            <span class="text-muted">No description provided.</span>
+                        </t>
+                    </div>
+                </div>
+                <t t-if="ticket.resolution">
+                    <div class="card mt-3 border-success">
+                        <div class="card-header bg-success-subtle fw-bold">Resolution</div>
+                        <div class="card-body"><div t-field="ticket.resolution"/></div>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <!-- ===== RMA: my returns ===== -->
+    <template id="portal_my_returns" name="My Returns">
+        <t t-call="portal.portal_layout">
+            <div class="container pt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h1 class="fw-bold">Returns (RMA)</h1>
+                    <a class="btn btn-primary" href="/my/returns/new" role="button">Request Return</a>
+                </div>
+                <t t-if="rmas">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>RMA #</th>
+                                    <th>Product</th>
+                                    <th>Qty</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="rmas" t-as="rma">
+                                    <tr>
+                                        <td><t t-esc="rma.name"/></td>
+                                        <td><t t-esc="rma.product_label or rma.product_id.display_name"/></td>
+                                        <td><t t-esc="rma.quantity"/></td>
+                                        <td><t t-esc="dict(rma._fields['reason']._description_selection(request.env)).get(rma.reason, '')"/></td>
+                                        <td><t t-esc="dict(rma._fields['state']._description_selection(request.env)).get(rma.state, rma.state)"/></td>
+                                        <td><span t-field="rma.create_date" t-options='{"widget": "date"}'/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="alert alert-info">
+                        No returns yet. Need to send something back?
+                        <a href="/my/returns/new" class="alert-link">Request a return authorization</a>.
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <!-- ===== RMA: new return form ===== -->
+    <template id="portal_return_new" name="New Return Request">
+        <t t-call="portal.portal_layout">
+            <div class="container pt-4" style="max-width: 760px;">
+                <h1 class="fw-bold mb-3">Request a Return Authorization</h1>
+                <form action="/my/returns/submit" method="post">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <div class="mb-3">
+                        <label class="form-label" for="product_label">Product</label>
+                        <input type="text" class="form-control" id="product_label" name="product_label"
+                               placeholder="Product name, part number, or description" required="required"/>
+                    </div>
+                    <div class="row">
+                        <div class="mb-3 col-md-4">
+                            <label class="form-label" for="quantity">Quantity</label>
+                            <input type="number" step="any" min="0.01" class="form-control" id="quantity" name="quantity" value="1"/>
+                        </div>
+                        <div class="mb-3 col-md-8">
+                            <label class="form-label" for="reason">Reason</label>
+                            <select class="form-select" id="reason" name="reason">
+                                <option value="defective" selected="selected">Defective Product</option>
+                                <option value="wrong_item">Wrong Item Shipped</option>
+                                <option value="damaged">Damaged in Shipping</option>
+                                <option value="unsuitable">Unsuitable for Application</option>
+                                <option value="surplus">Surplus / Unused</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3" t-if="orders">
+                        <label class="form-label" for="sale_order_id">Related Order (optional)</label>
+                        <select class="form-select" id="sale_order_id" name="sale_order_id">
+                            <option value="">-- None --</option>
+                            <t t-foreach="orders" t-as="order">
+                                <option t-att-value="order.id"><t t-esc="order.name"/></option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="description">Details</label>
+                        <textarea class="form-control" id="description" name="description" rows="5"/>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Return Request</button>
+                    <a href="/my/returns" class="btn btn-secondary ms-2">Cancel</a>
+                </form>
+            </div>
+        </t>
+    </template>
+
+    <!-- ===== Warranty: my registrations ===== -->
+    <template id="portal_my_warranty" name="My Warranty Registrations">
+        <t t-call="portal.portal_layout">
+            <div class="container pt-4" style="max-width: 900px;">
+                <h1 class="fw-bold mb-3">Warranty Registrations</h1>
+                <t t-if="warranties">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Registration #</th>
+                                    <th>Product</th>
+                                    <th>Serial #</th>
+                                    <th>Warranty End</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="warranties" t-as="w">
+                                    <tr>
+                                        <td><t t-esc="w.name"/></td>
+                                        <td><t t-esc="w.product_label or w.product_id.display_name"/></td>
+                                        <td><t t-esc="w.serial_number"/></td>
+                                        <td><span t-field="w.warranty_end" t-options='{"widget": "date"}'/></td>
+                                        <td>
+                                            <span class="badge"
+                                                  t-attf-class="#{w.state == 'registered' and 'text-bg-success' or (w.state == 'expiring' and 'text-bg-warning' or 'text-bg-danger')}">
+                                                <t t-esc="dict(w._fields['state']._description_selection(request.env)).get(w.state, w.state)"/>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="alert alert-info">No warranty registrations yet.</div>
+                </t>
+                <h2 class="fw-bold h5 mt-4 mb-3">Register a Product</h2>
+                <form action="/my/warranty/submit" method="post">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <div class="row">
+                        <div class="mb-3 col-md-6">
+                            <label class="form-label" for="product_label">Product</label>
+                            <input type="text" class="form-control" id="product_label" name="product_label"
+                                   placeholder="Product name or part number" required="required"/>
+                        </div>
+                        <div class="mb-3 col-md-6">
+                            <label class="form-label" for="serial_number">Serial Number</label>
+                            <input type="text" class="form-control" id="serial_number" name="serial_number"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="mb-3 col-md-4">
+                            <label class="form-label" for="install_date">Install Date</label>
+                            <input type="date" class="form-control" id="install_date" name="install_date"/>
+                        </div>
+                        <div class="mb-3 col-md-4">
+                            <label class="form-label" for="warranty_years">Warranty Years</label>
+                            <input type="number" min="1" max="50" class="form-control" id="warranty_years" name="warranty_years" value="10"/>
+                        </div>
+                        <div class="mb-3 col-md-4">
+                            <label class="form-label" for="installer">Installer (optional)</label>
+                            <input type="text" class="form-control" id="installer" name="installer"/>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="location">Installation Location (optional)</label>
+                        <input type="text" class="form-control" id="location" name="location"/>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Register Product</button>
+                </form>
+            </div>
+        </t>
+    </template>
+</riven_erp>

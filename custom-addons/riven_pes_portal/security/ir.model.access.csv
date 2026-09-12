@@ -1,0 +1,15 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_pes_support_ticket_admin,pes.support.ticket.admin,model_pes_support_ticket,base.group_system,1,1,1,1
+access_pes_support_ticket_user,pes.support.ticket.user,model_pes_support_ticket,base.group_user,1,1,1,1
+access_pes_support_ticket_portal,pes.support.ticket.portal,model_pes_support_ticket,base.group_portal,1,1,1,0
+access_pes_rma_admin,pes.rma.admin,model_pes_rma,base.group_system,1,1,1,1
+access_pes_rma_user,pes.rma.user,model_pes_rma,base.group_user,1,1,1,1
+access_pes_rma_portal,pes.rma.portal,model_pes_rma,base.group_portal,1,1,1,0
+access_pes_warranty_admin,pes.warranty.registration.admin,model_pes_warranty_registration,base.group_system,1,1,1,1
+access_pes_warranty_user,pes.warranty.registration.user,model_pes_warranty_registration,base.group_user,1,1,1,1
+access_pes_warranty_portal,pes.warranty.registration.portal,model_pes_warranty_registration,base.group_portal,1,1,1,0
+access_pes_portal_activity_admin,pes.portal.activity.admin,model_pes_portal_activity,base.group_system,1,1,1,1
+access_pes_portal_activity_user,pes.portal.activity.user,model_pes_portal_activity,base.group_user,1,1,1,1
+access_pes_company_member_admin,pes.company.member.admin,model_pes_company_member,base.group_system,1,1,1,1
+access_pes_company_member_user,pes.company.member.user,model_pes_company_member,base.group_user,1,1,1,1
+access_pes_company_member_portal,pes.company.member.portal,model_pes_company_member,base.group_portal,1,1,1,0

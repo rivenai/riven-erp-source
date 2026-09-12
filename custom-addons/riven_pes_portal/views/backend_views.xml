@@ -1,0 +1,284 @@
+<riven_erp>
+    <!-- ============ Support Tickets ============ -->
+    <record id="view_pes_support_ticket_list" model="ir.ui.view">
+        <field name="name">pes.support.ticket.list</field>
+        <field name="model">pes.support.ticket</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="subject"/>
+                <field name="category"/>
+                <field name="priority" widget="priority"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'new'"
+                       decoration-warning="state in ('in_progress', 'waiting_customer')"
+                       decoration-success="state in ('resolved', 'closed')"/>
+                <field name="assigned_to" widget="many2one_avatar_user"/>
+                <field name="create_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_pes_support_ticket_form" model="ir.ui.view">
+        <field name="name">pes.support.ticket.form</field>
+        <field name="model">pes.support.ticket</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_assign" type="object" class="btn-primary" string="Assign to Me"
+                                invisible="state in ('resolved', 'closed')"/>
+                        <button name="action_resolve" type="object" string="Mark Resolved"
+                                invisible="state in ('resolved', 'closed')"/>
+                        <button name="action_close" type="object" string="Close Ticket"
+                                invisible="state == 'closed'"/>
+                    </div>
+                    <widget name="web_ribbon" title="Resolved" bg_color="text-bg-success"
+                            invisible="state not in ('resolved', 'closed')"/>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                        <h3><field name="subject" placeholder="Ticket subject"/></h3>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="sale_order_id"/>
+                            <field name="assigned_to"/>
+                        </group>
+                        <group>
+                            <field name="category"/>
+                            <field name="priority"/>
+                            <field name="state"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="description"/>
+                        </page>
+                        <page string="Resolution" name="resolution">
+                            <field name="resolution"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============ RMA ============ -->
+    <record id="view_pes_rma_list" model="ir.ui.view">
+        <field name="name">pes.rma.list</field>
+        <field name="model">pes.rma</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="product_label" optional="show"/>
+                <field name="quantity"/>
+                <field name="reason"/>
+                <field name="state" widget="badge"
+                       decoration-info="state in ('draft', 'submitted')"
+                       decoration-success="state in ('approved', 'processed')"
+                       decoration-danger="state == 'rejected'"/>
+                <field name="create_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_pes_rma_form" model="ir.ui.view">
+        <field name="name">pes.rma.form</field>
+        <field name="model">pes.rma</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_submit" type="object" class="btn-primary" string="Submit"
+                                invisible="state != 'draft'"/>
+                        <button name="action_approve" type="object" class="btn-primary" string="Approve"
+                                invisible="state != 'submitted'"/>
+                        <button name="action_reject" type="object" string="Reject"
+                                invisible="state != 'submitted'"/>
+                        <button name="action_receive" type="object" string="Mark Received"
+                                invisible="state != 'approved'"/>
+                        <button name="action_process" type="object" class="btn-primary" string="Process Refund"
+                                invisible="state != 'received'"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="sale_order_id"/>
+                            <field name="product_id"/>
+                            <field name="product_label"/>
+                            <field name="quantity"/>
+                        </group>
+                        <group>
+                            <field name="reason"/>
+                            <field name="state"/>
+                            <field name="received_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="description"/>
+                        </page>
+                        <page string="Resolution" name="resolution">
+                            <field name="resolution"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============ Warranty Registration ============ -->
+    <record id="view_pes_warranty_list" model="ir.ui.view">
+        <field name="name">pes.warranty.registration.list</field>
+        <field name="model">pes.warranty.registration</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="product_label" optional="show"/>
+                <field name="serial_number"/>
+                <field name="install_date"/>
+                <field name="warranty_end"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'registered'"
+                       decoration-warning="state == 'expiring'"
+                       decoration-danger="state == 'expired'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_pes_warranty_form" model="ir.ui.view">
+        <field name="name">pes.warranty.registration.form</field>
+        <field name="model">pes.warranty.registration</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_register" type="object" class="btn-primary" string="Register"
+                                invisible="state != 'draft'"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="product_id"/>
+                            <field name="product_label"/>
+                            <field name="sale_order_id"/>
+                            <field name="serial_number"/>
+                        </group>
+                        <group>
+                            <field name="install_date"/>
+                            <field name="warranty_years"/>
+                            <field name="warranty_start"/>
+                            <field name="warranty_end"/>
+                            <field name="state"/>
+                        </group>
+                    </group>
+                    <group string="Installation">
+                        <field name="installer"/>
+                        <field name="location"/>
+                    </group>
+                    <field name="notes"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============ Company Members ============ -->
+    <record id="view_pes_company_member_list" model="ir.ui.view">
+        <field name="name">pes.company.member.list</field>
+        <field name="model">pes.company.member</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="partner_id"/>
+                <field name="name"/>
+                <field name="email"/>
+                <field name="role"/>
+                <field name="can_approve" optional="hide"/>
+                <field name="can_view_invoices" optional="hide"/>
+                <field name="can_request_quotes" optional="hide"/>
+                <field name="invite_sent" optional="hide"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_pes_company_member_form" model="ir.ui.view">
+        <field name="name">pes.company.member.form</field>
+        <field name="model">pes.company.member</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_mark_invite_sent" type="object" string="Mark Invite Sent"
+                                invisible="invite_sent"/>
+                    </div>
+                    <div class="oe_title">
+                        <h2><field name="name" placeholder="Member name"/></h2>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="email"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="role"/>
+                            <field name="can_approve"/>
+                            <field name="can_view_invoices"/>
+                            <field name="can_request_quotes"/>
+                            <field name="invite_sent"/>
+                            <field name="invite_date"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============ Actions (must precede menuitems) ============ -->
+    <record id="action_pes_support_ticket" model="ir.actions.act_window">
+        <field name="name">Support Tickets</field>
+        <field name="res_model">pes.support.ticket</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_pes_rma" model="ir.actions.act_window">
+        <field name="name">Returns (RMA)</field>
+        <field name="res_model">pes.rma</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_pes_warranty" model="ir.actions.act_window">
+        <field name="name">Warranty Registrations</field>
+        <field name="res_model">pes.warranty.registration</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_pes_company_member" model="ir.actions.act_window">
+        <field name="name">Company Members</field>
+        <field name="res_model">pes.company.member</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ============ Menus ============ -->
+    <menuitem id="menu_pes_service_root" name="PES Service" sequence="60"
+              groups="base.group_user"/>
+    <menuitem id="menu_pes_support_tickets" name="Support Tickets" parent="menu_pes_service_root"
+              action="action_pes_support_ticket" sequence="10"/>
+    <menuitem id="menu_pes_rma" name="Returns (RMA)" parent="menu_pes_service_root"
+              action="action_pes_rma" sequence="20"/>
+    <menuitem id="menu_pes_warranty" name="Warranty Registrations" parent="menu_pes_service_root"
+              action="action_pes_warranty" sequence="30"/>
+    <menuitem id="menu_pes_company_members" name="Company Members" parent="menu_pes_service_root"
+              action="action_pes_company_member" sequence="40"/>
+</riven_erp>
