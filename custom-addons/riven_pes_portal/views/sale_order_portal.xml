@@ -1,0 +1,45 @@
+<riven_erp>
+    <!-- Portal: fulfillment status section on the order page (my.pes / portal.pes.supply) -->
+    <template id="portal_order_page_pes_fulfillment"
+              inherit_id="sale.sale_order_portal_template" name="PES Fulfillment Status">
+        <xpath expr="//div[@id='sale_order_communication']" position="before">
+            <div id="pes_fulfillment" class="mt-4"
+                 t-if="sale_order.state in ('sale', 'done') and any(l.pes_supplier_status for l in sale_order.order_line)">
+                <h3 class="fw-bold mb-3">Fulfillment Status</h3>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Qty Ordered</th>
+                                <th>Qty Confirmed</th>
+                                <th>Status</th>
+                                <th>Est. Arrival</th>
+                                <th>Tracking</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="sale_order.order_line" t-as="line">
+                                <tr t-if="line.display_type == False and line.pes_supplier_status">
+                                    <td><t t-esc="line.product_id.display_name or line.name"/></td>
+                                    <td><t t-esc="line.product_uom_qty"/></td>
+                                    <td><t t-esc="line.pes_supplier_confirmed_qty"/></td>
+                                    <td>
+                                        <span class="badge"
+                                              t-attf-class="#{line.pes_supplier_status in ('confirmed', 'shipped', 'delivered') and 'text-bg-success' or (line.pes_supplier_status == 'backordered' and 'text-bg-warning' or (line.pes_supplier_status == 'cancelled' and 'text-bg-danger' or 'text-bg-info'))}">
+                                            <t t-esc="dict(line._fields['pes_supplier_status']._description_selection(request.env)).get(line.pes_supplier_status, line.pes_supplier_status)"/>
+                                        </span>
+                                    </td>
+                                    <td><span t-field="line.pes_supplier_eta" t-options='{"widget": "date"}'/></td>
+                                    <td><t t-esc="line.pes_tracking_numbers or ''"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-muted small">Status reflects our suppliers' confirmed fulfillment only. Questions about an item?
+                    <a t-attf-href="/my/support" class="alert-link">Open a support ticket</a>.</p>
+            </div>
+        </xpath>
+    </template>
+</riven_erp>

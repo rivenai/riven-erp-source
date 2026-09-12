@@ -1,0 +1,32 @@
+<riven_erp>
+    <!-- Backend: Fulfillment tab on the sale order form -->
+    <record id="view_order_form_pes_fulfillment" model="ir.ui.view">
+        <field name="name">sale.order.form.pes.fulfillment</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Fulfillment Status" name="pes_fulfillment">
+                    <field name="order_line" readonly="1">
+                        <list editable="bottom" create="0" delete="0">
+                            <field name="product_id" readonly="1" optional="show"/>
+                            <field name="name" readonly="1" optional="hide"/>
+                            <field name="product_uom_qty" string="Qty Ordered" readonly="1"/>
+                            <field name="pes_supplier_confirmed_qty"/>
+                            <field name="pes_supplier_status" widget="badge"
+                                   decoration-info="pes_supplier_status == 'pending'"
+                                   decoration-warning="pes_supplier_status == 'backordered'"
+                                   decoration-success="pes_supplier_status in ('confirmed', 'shipped', 'delivered')"
+                                   decoration-danger="pes_supplier_status == 'cancelled'"/>
+                            <field name="pes_supplier_eta"/>
+                            <field name="pes_tracking_numbers"/>
+                        </list>
+                    </field>
+                    <div class="text-muted mt-2">
+                        These fields are customer-visible on the portal order page. Vendor names and costs are never exposed.
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</riven_erp>
