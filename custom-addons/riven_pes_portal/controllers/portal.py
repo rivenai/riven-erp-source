@@ -223,3 +223,67 @@ class PesPortalController(http.Controller):
             'page_name': 'quote_requests',
         }
         return request.render('riven_pes_portal.portal_quote_detail', values)
+
+    # --------------------------------------------------
+    # Vendor RFQs (supplier-facing)
+    # --------------------------------------------------
+    @http.route('/my/vendor-rfq', type='http', auth='user', website=True)
+    def portal_my_vendor_rfqs(self, **kw):
+        partner = request.env.user.partner_id
+        Rfq = request.env['pes.vendor.rfq'].sudo()
+        domain = ['|', ('supplier_id', '=', partner.id),
+                  ('supplier_id', '=', partner.commercial_partner_id.id)]
+        rfqs = Rfq.search(domain, order='create_date desc, id desc')
+        values = {
+            'rfqs': rfqs,
+            'page_name': 'vendor_rfqs',
+        }
+        return request.render('riven_pes_portal.portal_my_vendor_rfqs', values)
+
+    @http.route('/my/vendor-rfq/<int:rfq_id>', type='http', auth='user', website=True)
+    def portal_vendor_rfq_detail(self, rfq_id, **kw):
+        rfq = request.env['pes.vendor.rfq'].sudo().browse(rfq_id)
+        if not rfq.exists():
+            return request.redirect('/my/vendor-rfq')
+        partner = request.env.user.partner_id
+        if rfq.supplier_id.id not in (partner.id, partner.commercial_partner_id.id):
+            raise AccessError(_('You do not have access to this RFQ.'))
+        values = {
+            'rfq': rfq,
+            'page_name': 'vendor_rfqs',
+        }
+        return request.render('riven_pes_portal.portal_vendor_rfq_detail', values)
+
+    @http.route('/my/vendor-rfq/<int:rfq_id>/respond', type='http',
+                auth='user', website=True)
+    def portal_vendor_rfq_respond(self, rfq_id, **post):
+        rfq = request.env['pes.vendor.rfq'].sudo().browse(rfq_id)
+        if not rfq.exists():
+            return request.redirect('/my/vendor-rfq')
+        partner = request.env.user.partner_id
+        if rfq.supplier_id.id not in (partner.id, partner.commercial_partner_id.id):
+            raise AccessError(_('You do not have access to this RFQ.'))
+        line_vals = []
+        for line in rfq.line_ids:
+            price_raw = post.get('price_%s' % line.id, '').strip()
+            lead_raw = post.get('lead_%s' % line.id, '').strip()
+            note = (post.get('note_%s' % line.id) or '').strip()
+            try:
+                price = float(price_raw) if price_raw else None
+            except ValueError:
+                price = None
+            try:
+                lead = int(lead_raw) if lead_raw else None
+            except ValueError:
+                lead = None
+            line_vals.append((line.id, price, lead, note))
+        try:
+            rfq.submit_supplier_response(line_vals, post.get('response_notes'))
+        except Exception:
+            return request.redirect('/my/vendor-rfq/%s' % rfq_id)
+        request.env['pes.portal.activity'].sudo().create({
+            'activity_type': 'vendor_rfq_response',
+            'description': 'Supplier responded to RFQ %s' % rfq.name,
+            'page_url': '/my/vendor-rfq/%s/respond' % rfq_id,
+        })
+        return request.redirect('/my/vendor-rfq/%s' % rfq_id)

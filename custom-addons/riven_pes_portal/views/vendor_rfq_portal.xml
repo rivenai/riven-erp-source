@@ -1,0 +1,152 @@
+<riven_erp>
+    <!-- Portal home tile (suppliers only) -->
+    <template id="portal_my_home_vendor_rfq" inherit_id="portal.portal_my_home"
+              name="PES Vendor RFQ Tile">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <div class="o_portal_docs_list_links d-flex flex-column gap-1 pb-3 pt-3 flex-grow-1"
+                 groups="base.group_portal" t-if="user_id.partner_id.supplier_rank > 0">
+                <a class="o_portal_doc_tile btn btn-light border d-flex align-items-center justify-content-between" href="/my/vendor-rfq">
+                    <span class="fw-bold">Vendor RFQs</span>
+                    <span class="text-muted">Respond to our quote requests</span>
+                </a>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- ===== Vendor RFQ: list ===== -->
+    <template id="portal_my_vendor_rfqs" name="My Vendor RFQs">
+        <t t-call="portal.portal_layout">
+            <h3 class="fw-bold">Vendor RFQs</h3>
+            <p class="text-muted">Quote requests PES Supply sent to you.</p>
+            <t t-if="rfqs">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Sent</th>
+                                <th>Response Due</th>
+                                <th>Items</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="rfqs" t-as="r">
+                                <tr>
+                                    <td><a t-attf-href="/my/vendor-rfq/#{r.id}"><t t-esc="r.name"/></a></td>
+                                    <td><span t-field="r.create_date" t-options='{"widget": "date"}'/></td>
+                                    <td><span t-field="r.date_due" t-options='{"widget": "date"}'/></td>
+                                    <td><t t-esc="len(r.line_ids)"/></td>
+                                    <td>
+                                        <span class="badge"
+                                              t-attf-class="#{r.state == 'awarded' and 'text-bg-success' or (r.state == 'responded' and 'text-bg-warning' or (r.state == 'closed' and 'text-bg-secondary' or 'text-bg-info'))}">
+                                            <t t-esc="dict(r._fields['state']._description_selection(request.env)).get(r.state, r.state)"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="alert alert-info">No RFQs for you right now.</div>
+            </t>
+        </t>
+    </template>
+
+    <!-- ===== Vendor RFQ: detail + respond ===== -->
+    <template id="portal_vendor_rfq_detail" name="Vendor RFQ Detail">
+        <t t-call="portal.portal_layout">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h3 class="fw-bold mb-0"><t t-esc="rfq.name"/></h3>
+                    <p class="text-muted mb-0">
+                        Sent <span t-field="rfq.create_date" t-options='{"widget": "date"}'/>
+                        <t t-if="rfq.date_due"> - respond by <span t-field="rfq.date_due" t-options='{"widget": "date"}'/></t>
+                    </p>
+                </div>
+                <span class="badge"
+                      t-attf-class="#{rfq.state == 'awarded' and 'text-bg-success' or (rfq.state == 'responded' and 'text-bg-warning' or (rfq.state == 'closed' and 'text-bg-secondary' or 'text-bg-info'))} fs-6">
+                    <t t-esc="dict(rfq._fields['state']._description_selection(request.env)).get(rfq.state, rfq.state)"/>
+                </span>
+            </div>
+            <t t-if="rfq.notes">
+                <div class="alert alert-light border mt-3"><t t-esc="rfq.notes"/></div>
+            </t>
+            <form t-if="rfq.state in ('sent', 'responded')" action="#" method="post"
+                  t-attf-action="/my/vendor-rfq/#{rfq.id}/respond" class="mt-3">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Unit Price</th>
+                                <th>Lead Time (days)</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="rfq.line_ids" t-as="line">
+                                <tr>
+                                    <td><t t-esc="line.description"/></td>
+                                    <td><t t-esc="line.product_qty"/></td>
+                                    <td>
+                                        <input type="text" class="form-control" inputmode="decimal"
+                                               t-att-name="'price_%s' % line.id"
+                                               t-att-value="line.unit_price or ''" placeholder="0.00"/>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" inputmode="numeric"
+                                               t-att-name="'lead_%s' % line.id"
+                                               t-att-value="line.lead_days or ''" placeholder="days"/>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               t-att-name="'note_%s' % line.id"
+                                               t-att-value="line.response_note or ''" placeholder="optional"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Overall notes</label>
+                    <textarea name="response_notes" rows="3" class="form-control"
+                              placeholder="Availability, shipping, terms..."><t t-esc="rfq.response_notes or ''"/></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Response</button>
+            </form>
+            <t t-if="rfq.state in ('awarded', 'closed') and rfq.line_ids">
+                <h5 class="fw-bold mt-4">Your Response</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Lead (days)</th><th>Note</th></tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="rfq.line_ids" t-as="line">
+                                <tr>
+                                    <td><t t-esc="line.description"/></td>
+                                    <td><t t-esc="line.product_qty"/></td>
+                                    <td><t t-esc="line.unit_price or '-'"/></td>
+                                    <td><t t-esc="line.lead_days or '-'"/></td>
+                                    <td><t t-esc="line.response_note or '-'"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+                <t t-if="rfq.response_notes">
+                    <p class="text-muted"><t t-esc="rfq.response_notes"/></p>
+                </t>
+            </t>
+            <p class="mt-3">
+                <a href="/my/vendor-rfq" class="btn btn-light border">&#8592; All Vendor RFQs</a>
+            </p>
+        </t>
+    </template>
+</riven_erp>

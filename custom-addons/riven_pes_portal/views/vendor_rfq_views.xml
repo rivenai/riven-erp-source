@@ -1,0 +1,96 @@
+<riven_erp>
+    <!-- Vendor RFQ: list -->
+    <record id="view_pes_vendor_rfq_list" model="ir.ui.view">
+        <field name="name">pes.vendor.rfq.list</field>
+        <field name="model">pes.vendor.rfq</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="supplier_id"/>
+                <field name="date_due" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-info="state in ('draft', 'sent')"
+                       decoration-warning="state == 'responded'"
+                       decoration-success="state == 'awarded'"
+                       decoration-muted="state == 'closed'"/>
+                <field name="responded_date" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vendor RFQ: form -->
+    <record id="view_pes_vendor_rfq_form" model="ir.ui.view">
+        <field name="name">pes.vendor.rfq.form</field>
+        <field name="model">pes.vendor.rfq</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_mark_sent" type="object"
+                            string="Mark Sent to Supplier" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_award" type="object"
+                            string="Award" class="btn-primary"
+                            invisible="state not in ('sent', 'responded')"/>
+                    <button name="action_close" type="object"
+                            string="Close"
+                            invisible="state in ('closed', 'draft')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,sent,responded,awarded"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="supplier_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="date_due"/>
+                            <field name="responded_date" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Requested Items" name="lines">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="product_id" optional="show"/>
+                                    <field name="description" required="1"/>
+                                    <field name="product_qty"/>
+                                    <field name="unit_price" string="Quoted Price" readonly="1"/>
+                                    <field name="lead_days" string="Lead (days)" readonly="1"/>
+                                    <field name="response_note" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <group>
+                                <field name="notes" placeholder="Notes sent to the supplier..."/>
+                                <field name="response_notes" readonly="1"
+                                       placeholder="Supplier response notes appear here after they respond on the portal..."/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_pes_vendor_rfq" model="ir.actions.act_window">
+        <field name="name">Vendor RFQs</field>
+        <field name="res_model">pes.vendor.rfq</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No vendor RFQs yet</p>
+            <p>Create an RFQ for a supplier; they respond with pricing and lead time on my.pes.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_pes_vendor_rfq"
+              name="Vendor RFQs"
+              parent="menu_pes_service_root"
+              action="action_pes_vendor_rfq"
+              sequence="20"/>
+</riven_erp>
