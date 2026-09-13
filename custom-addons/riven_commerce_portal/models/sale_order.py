@@ -43,6 +43,34 @@ class SaleOrder(models.Model):
         }
         return state_map.get(self.state, 'pricing')
 
+    def _portal_approved_for_sign(self):
+        """Approval gate for client signature -- suite-native hook.
+
+        Reads the tenant approval state when present (riven_pes_operations
+        defines riven_approval_state on sale.order); otherwise a tenant with
+        no approval workflow is treated as approved (ungated by default).
+        """
+        self.ensure_one()
+        if 'riven_approval_state' not in self._fields:
+            return True
+        return self.riven_approval_state == 'approved'
+
+    def _portal_sign_pending_approval(self):
+        """True when the quote is live-to-sign but still awaiting internal approval."""
+        self.ensure_one()
+        if 'riven_approval_state' not in self._fields:
+            return False
+        return (
+            self.state in ('draft', 'sent')
+            and not self.signature
+            and self.riven_approval_state in ('not_requested', 'pending', 'rejected')
+        )
+
+    def _has_to_be_signed(self):
+        # Core signature gate AND the tenant approval gate: a quote that has
+        # not cleared internal approval never presents a sign action to the client.
+        return super()._has_to_be_signed() and self._portal_approved_for_sign()
+
     def write(self, vals):
         # Signature-driven status progression: when the core Accept & Sign flow
         # records the client signature, advance the portal status to Signed.

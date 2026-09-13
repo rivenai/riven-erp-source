@@ -86,7 +86,7 @@
         <xpath expr="//div[@id='sale_order_communication']" position="before">
             <t t-set="portal_cfg" t-value="request.env['riven.portal.config'].sudo().get_active()"/>
             <t t-set="vault_atts"
-               t-value="request.env['ir.attachment'].sudo().search([('res_model', '=', 'sale.order'), ('res_id', '=', sale_order.id)], order='id desc')"/>
+               t-value="request.env['ir.attachment'].sudo().search([('res_model', '=', 'sale.order'), ('res_id', '=', sale_order.id), ('portal_visible', '=', True)], order='id desc')"/>
             <div id="riven_doc_vault" class="mt-4" t-if="portal_cfg.show_doc_vault and vault_atts">
                 <h4 class="fw-bold mb-3">Documents</h4>
                 <div class="table-responsive">
@@ -125,6 +125,20 @@
                    t-attf-style="color: #{portal_cfg.primary_color};">
                     <t t-esc="portal_cfg.support_email"/>
                 </a>
+            </div>
+        </xpath>
+    </template>
+    <!-- Approval-gated signature: notice when the quote awaits internal review -->
+    <template id="portal_order_sign_approval_notice" inherit_id="sale.sale_order_portal_template" name="Riven Sign Approval Notice">
+        <xpath expr="//div[@name='sale_order_actions']" position="before">
+            <div id="riven_sign_approval_notice" class="mt-4" t-if="sale_order._portal_sign_pending_approval()">
+                <div class="alert alert-secondary d-flex align-items-center gap-2 mb-0">
+                    <i class="fa fa-clock-o"/>
+                    <div>
+                        <div class="fw-semibold">Pricing under internal review</div>
+                        <div class="small">This quote is awaiting final approval on our side. You'll be notified the moment it's ready to sign.</div>
+                    </div>
+                </div>
             </div>
         </xpath>
     </template>

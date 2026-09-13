@@ -50,10 +50,37 @@
         </field>
     </record>
 
+    <record id="action_ir_attachment_portal_visibility" model="ir.actions.act_window">
+        <field name="name">Client Document Visibility</field>
+        <field name="res_model">ir.attachment</field>
+        <field name="view_mode">list</field>
+        <field name="domain">[('res_model', '=', 'sale.order')]</field>
+        <field name="help">Toggle 'Visible in Client Portal' to decide which order documents a client sees in their Document vault. Internal notes and cost worksheets should be hidden.</field>
+    </record>
+
+    <record id="view_ir_attachment_portal_visibility_list" model="ir.ui.view">
+        <field name="name">ir.attachment.portal.visibility.list</field>
+        <field name="model">ir.attachment</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" create="false" delete="false">
+                <field name="name"/>
+                <field name="res_model" invisible="1"/>
+                <field name="res_id"/>
+                <field name="mimetype" optional="hidden"/>
+                <field name="portal_visible"/>
+            </list>
+        </field>
+    </record>
+
     <menuitem id="menu_riven_suite" name="Riven Suite" sequence="90"/>
     <menuitem id="menu_riven_portal_config"
               name="Tenant Configuration"
               parent="menu_riven_suite"
               action="action_riven_portal_config"
               sequence="10"/>
+    <menuitem id="menu_ir_attachment_portal_visibility"
+              name="Client Document Visibility"
+              parent="menu_riven_suite"
+              action="action_ir_attachment_portal_visibility"
+              sequence="20"/>
 </riven_erp>
