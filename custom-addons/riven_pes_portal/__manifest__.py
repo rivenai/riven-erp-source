@@ -14,7 +14,7 @@ Rebuilt (2026-09) on the Riven ERP 19 stack from the pre-rebuild portal specific
 
 Replaces the pre-suspension portal customizations (former x_pes_* models and portal views).
     """,
-    'version': '0.0.05',
+    'version': '0.0.06',
     'category': 'Website/Portal',
     'author': 'Riven ERP',
     'license': 'LGPL-3',
@@ -27,6 +27,8 @@ Replaces the pre-suspension portal customizations (former x_pes_* models and por
         'views/sale_order_views.xml',
         'views/portal_templates.xml',
         'views/sale_order_portal.xml',
+        'views/quote_request_views.xml',
+        'views/quote_portal_templates.xml',
     ],
     'application': True,
     'installable': True,

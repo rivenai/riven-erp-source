@@ -13,3 +13,9 @@ access_pes_portal_activity_user,pes.portal.activity.user,model_pes_portal_activi
 access_pes_company_member_admin,pes.company.member.admin,model_pes_company_member,base.group_system,1,1,1,1
 access_pes_company_member_user,pes.company.member.user,model_pes_company_member,base.group_user,1,1,1,1
 access_pes_company_member_portal,pes.company.member.portal,model_pes_company_member,base.group_portal,1,1,1,0
+access_pes_quote_request_admin,pes.quote.request.admin,model_pes_quote_request,base.group_system,1,1,1,1
+access_pes_quote_request_user,pes.quote.request.user,model_pes_quote_request,base.group_user,1,1,1,1
+access_pes_quote_request_portal,pes.quote.request.portal,model_pes_quote_request,base.group_portal,1,1,1,0
+access_pes_quote_request_line_admin,pes.quote.request.line.admin,model_pes_quote_request_line,base.group_system,1,1,1,1
+access_pes_quote_request_line_user,pes.quote.request.line.user,model_pes_quote_request_line,base.group_user,1,1,1,1
+access_pes_quote_request_line_portal,pes.quote.request.line.portal,model_pes_quote_request_line,base.group_portal,1,1,1,0

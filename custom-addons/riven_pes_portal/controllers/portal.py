@@ -152,3 +152,74 @@ class PesPortalController(http.Controller):
             'state': 'registered',
         })
         return request.redirect('/my/warranty')
+
+    # --------------------------------------------------
+    # Quote Requests (customer RFQ)
+    # --------------------------------------------------
+    @http.route(['/my/quotes', '/my/quotes/page/<int:page>'], type='http',
+                auth='user', website=True)
+    def portal_my_quotes(self, page=1, **kw):
+        partner = request.env.user.partner_id
+        Req = request.env['pes.quote.request'].sudo()
+        domain = ['|', ('partner_id', '=', partner.id),
+                  ('partner_id', '=', partner.commercial_partner_id.id)]
+        quotes = Req.search(domain, order='create_date desc, id desc')
+        values = {
+            'quotes': quotes,
+            'page_name': 'quote_requests',
+        }
+        return request.render('riven_pes_portal.portal_my_quotes', values)
+
+    @http.route('/my/quotes/new', type='http', auth='user', website=True)
+    def portal_quote_new(self, **kw):
+        values = {
+            'page_name': 'quote_requests',
+        }
+        return request.render('riven_pes_portal.portal_quote_new', values)
+
+    @http.route('/my/quotes/submit', type='http', auth='user', website=True)
+    def portal_quote_submit(self, **post):
+        descriptions = post.get('descriptions', '').strip()
+        if not descriptions:
+            return request.redirect('/my/quotes/new')
+        partner = request.env.user.partner_id
+        Req = request.env['pes.quote.request'].sudo()
+        qty_raw = post.get('quantities', '').strip()
+        lines = []
+        descs = [d.strip() for d in descriptions.splitlines() if d.strip()]
+        qtys = [q.strip() for q in qty_raw.splitlines() if q.strip()] if qty_raw else []
+        for i, d in enumerate(descs[:25]):
+            try:
+                qty = float(qtys[i]) if i < len(qtys) and qtys[i] else 1.0
+            except ValueError:
+                qty = 1.0
+            lines.append((0, 0, {'description': d[:500], 'product_qty': qty}))
+        req = Req.create({
+            'partner_id': partner.commercial_partner_id.id or partner.id,
+            'contact_name': post.get('contact_name') or partner.name,
+            'contact_email': post.get('contact_email') or partner.email,
+            'contact_phone': post.get('contact_phone') or partner.phone,
+            'date_target': post.get('date_target') or False,
+            'notes': post.get('notes') or '',
+            'line_ids': lines,
+        })
+        request.env['pes.portal.activity'].sudo().create({
+            'activity_type': 'quote_request',
+            'description': 'Quote request submitted: %s' % req.name,
+            'page_url': '/my/quotes/submit',
+        })
+        return request.redirect('/my/quotes/%s' % req.id)
+
+    @http.route('/my/quotes/<int:req_id>', type='http', auth='user', website=True)
+    def portal_quote_detail(self, req_id, **kw):
+        req = request.env['pes.quote.request'].sudo().browse(req_id)
+        if not req.exists():
+            return request.redirect('/my/quotes')
+        partner = request.env.user.partner_id
+        if req.partner_id.id not in (partner.id, partner.commercial_partner_id.id):
+            raise AccessError(_('You do not have access to this quote request.'))
+        values = {
+            'quote': req,
+            'page_name': 'quote_requests',
+        }
+        return request.render('riven_pes_portal.portal_quote_detail', values)

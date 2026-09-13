@@ -1,0 +1,86 @@
+<riven_erp>
+    <!-- Quote Request: list -->
+    <record id="view_pes_quote_request_list" model="ir.ui.view">
+        <field name="name">pes.quote.request.list</field>
+        <field name="model">pes.quote.request</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="date_target" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-info="state in ('new', 'in_review')"
+                       decoration-success="state in ('quoted', 'converted')"
+                       decoration-muted="state == 'lost'"/>
+                <field name="sale_order_id" optional="show"/>
+                <field name="create_date" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Quote Request: form -->
+    <record id="view_pes_quote_request_form" model="ir.ui.view">
+        <field name="name">pes.quote.request.form</field>
+        <field name="model">pes.quote.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_create_quotation" type="object"
+                            string="Create Quotation" class="btn-primary"
+                            invisible="state not in ('new', 'in_review')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="new,in_review,quoted,converted"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="contact_name"/>
+                            <field name="contact_email"/>
+                            <field name="contact_phone"/>
+                        </group>
+                        <group>
+                            <field name="date_target"/>
+                            <field name="sale_order_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Requested Items" name="lines">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="product_id" optional="show"/>
+                                    <field name="description" required="1"/>
+                                    <field name="product_qty"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" placeholder="Customer notes from the portal request..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_pes_quote_request" model="ir.actions.act_window">
+        <field name="name">Quote Requests</field>
+        <field name="res_model">pes.quote.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No quote requests yet</p>
+            <p>Customer RFQs submitted from the my.pes portal appear here.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_pes_quote_request"
+              name="Quote Requests"
+              parent="menu_pes_service_root"
+              action="action_pes_quote_request"
+              sequence="15"/>
+</riven_erp>

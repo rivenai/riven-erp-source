@@ -1,0 +1,143 @@
+<riven_erp>
+    <!-- ===== Quote Requests: my requests ===== -->
+    <template id="portal_my_quotes" name="My Quote Requests">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-set="page_name" t-value="'quote_requests'"/>
+            <h3 class="fw-bold">Quote Requests</h3>
+            <p class="text-muted">Requests for quote you submitted to PES Supply.</p>
+            <a class="btn btn-primary mb-3" href="/my/quotes/new">Request a Quote</a>
+            <t t-if="quotes">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Requested</th>
+                                <th>Needed By</th>
+                                <th>Items</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="quotes" t-as="q">
+                                <tr>
+                                    <td><a t-attf-href="/my/quotes/#{q.id}"><t t-esc="q.name"/></a></td>
+                                    <td><span t-field="q.create_date" t-options='{"widget": "date"}'/></td>
+                                    <td><span t-field="q.date_target" t-options='{"widget": "date"}'/></td>
+                                    <td><t t-esc="len(q.line_ids)"/></td>
+                                    <td>
+                                        <span class="badge"
+                                              t-attf-class="#{q.state in ('quoted', 'converted') and 'text-bg-success' or (q.state == 'lost' and 'text-bg-secondary' or 'text-bg-info')}">
+                                            <t t-esc="dict(q._fields['state']._description_selection(request.env)).get(q.state, q.state)"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="alert alert-info">No quote requests yet. Send us your list and we'll quote it.</div>
+            </t>
+        </t>
+    </template>
+
+    <!-- ===== Quote Requests: new request form ===== -->
+    <template id="portal_quote_new" name="New Quote Request">
+        <t t-call="portal.portal_layout">
+            <h3 class="fw-bold">Request a Quote</h3>
+            <p class="text-muted">List the products you need - one per line, with quantity. Our team will price it and follow up.</p>
+            <form action="/my/quotes/submit" method="post" class="row mt-4">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <div class="col-12 col-lg-6 mb-3">
+                    <label class="form-label fw-bold">Contact name</label>
+                    <input type="text" name="contact_name" class="form-control" t-att-value="user_id.partner_id.name if user_id else ''"/>
+                </div>
+                <div class="col-12 col-lg-6 mb-3">
+                    <label class="form-label fw-bold">Email</label>
+                    <input type="email" name="contact_email" class="form-control" t-att-value="user_id.partner_id.email if user_id else ''"/>
+                </div>
+                <div class="col-12 col-lg-6 mb-3">
+                    <label class="form-label fw-bold">Phone</label>
+                    <input type="text" name="contact_phone" class="form-control"/>
+                </div>
+                <div class="col-12 col-lg-6 mb-3">
+                    <label class="form-label fw-bold">Needed by</label>
+                    <input type="date" name="date_target" class="form-control"/>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label fw-bold">Items needed <span class="text-danger">*</span></label>
+                    <textarea name="descriptions" rows="6" class="form-control" required="required"
+                              placeholder="One product per line, e.g.&#10;100A 480V 3-pole breaker&#10;2in EMT conduit, 10ft sticks"></textarea>
+                    <div class="form-text">List each item on its own line.</div>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label fw-bold">Quantities (optional)</label>
+                    <textarea name="quantities" rows="6" class="form-control"
+                              placeholder="One quantity per line, same order as items, e.g.&#10;12&#10;50"></textarea>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label fw-bold">Notes</label>
+                    <textarea name="notes" rows="3" class="form-control"
+                              placeholder="Site details, specs, delivery needs..."></textarea>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                    <a class="btn btn-light border ms-2" href="/my/quotes">Cancel</a>
+                </div>
+            </form>
+        </t>
+    </template>
+
+    <!-- ===== Quote Requests: detail ===== -->
+    <template id="portal_quote_detail" name="Quote Request Detail">
+        <t t-call="portal.portal_layout">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h3 class="fw-bold mb-0"><t t-esc="quote.name"/></h3>
+                    <p class="text-muted mb-0">
+                        Submitted <span t-field="quote.create_date" t-options='{"widget": "date"}'/>
+                        <t t-if="quote.date_target"> - needed by <span t-field="quote.date_target" t-options='{"widget": "date"}'/></t>
+                    </p>
+                </div>
+                <span class="badge"
+                      t-attf-class="#{quote.state in ('quoted', 'converted') and 'text-bg-success' or (quote.state == 'lost' and 'text-bg-secondary' or 'text-bg-info')} fs-6">
+                    <t t-esc="dict(quote._fields['state']._description_selection(request.env)).get(quote.state, quote.state)"/>
+                </span>
+            </div>
+            <div class="table-responsive mt-3">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="quote.line_ids" t-as="line">
+                            <tr>
+                                <td><t t-esc="line.description"/></td>
+                                <td><t t-esc="line.product_qty"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+            <t t-if="quote.notes">
+                <h5 class="fw-bold mt-3">Your Notes</h5>
+                <p class="text-muted"><t t-esc="quote.notes"/></p>
+            </t>
+            <t t-if="quote.sale_order_id">
+                <div class="alert alert-success mt-3">
+                    Your quotation is ready:
+                    <a t-attf-href="/my/orders/#{quote.sale_order_id.id}" class="alert-link"><t t-esc="quote.sale_order_id.name"/></a>
+                </div>
+            </t>
+            <p class="mt-3">
+                <a href="/my/quotes" class="btn btn-light border">&#8592; All Quote Requests</a>
+            </p>
+        </t>
+    </template>
+</riven_erp>
