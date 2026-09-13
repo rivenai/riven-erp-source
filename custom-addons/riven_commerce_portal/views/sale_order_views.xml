@@ -1,0 +1,52 @@
+<riven_erp>
+    <!-- Action must precede the views that reference it -->
+    <record id="action_order_line_pricing_confidence" model="ir.actions.act_window">
+        <field name="name">Order Line Pricing Confidence</field>
+        <field name="res_model">sale.order.line</field>
+        <field name="view_mode">list</field>
+        <field name="domain">[('is_downpayment', '=', False), ('display_type', 'in', [False, 'product'])]</field>
+    </record>
+
+    <record id="view_order_line_confidence_list" model="ir.ui.view">
+        <field name="name">sale.order.line.confidence.list.riven</field>
+        <field name="model">sale.order.line</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" create="false" delete="false">
+                <field name="order_id" readonly="1"/>
+                <field name="product_id" readonly="1"/>
+                <field name="product_uom_qty" string="Qty" readonly="1"/>
+                <field name="price_unit" readonly="1" optional="show"/>
+                <field name="pricing_confidence"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_order_form_deal_room" model="ir.ui.view">
+        <field name="name">sale.order.form.riven.deal.room</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Deal Room" name="riven_deal_room">
+                    <group>
+                        <group string="Portal Status">
+                            <field name="portal_status"/>
+                            <field name="project_site"/>
+                            <field name="project_type"/>
+                        </group>
+                        <group string="Timeline">
+                            <field name="rfq_sent_date"/>
+                            <field name="pricing_expected_date"/>
+                            <field name="delivery_lead_weeks"/>
+                        </group>
+                    </group>
+                    <separator string="Line Pricing Confidence"/>
+                    <button name="%(action_order_line_pricing_confidence)d"
+                            type="action"
+                            string="Edit Line Pricing Confidence"
+                            class="btn-secondary"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</riven_erp>

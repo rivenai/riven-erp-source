@@ -1,0 +1,117 @@
+<riven_erp>
+    <!-- Deal Room: project overview card on the order/quote detail page -->
+    <template id="portal_order_deal_room" inherit_id="sale.sale_order_portal_content" name="Riven Deal Room">
+        <xpath expr="//div[@id='introduction']" position="after">
+            <t t-set="portal_cfg" t-value="request.env['riven.portal.config'].sudo().get_active()"/>
+            <t t-set="rps" t-value="sale_order.get_portal_display_status()"/>
+            <t t-set="rps_map" t-value="portal_cfg.portal_status_map()"/>
+            <div id="riven_deal_room" class="mb-4" t-if="portal_cfg.deal_room_enabled">
+                <div class="card border-0 shadow-sm" t-attf-style="border-left: 0.35rem solid #{portal_cfg.primary_color};">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                            <h4 class="mb-0 fw-bold">Project Overview</h4>
+                            <span class="badge rounded-pill fs-6 px-3 py-2" t-attf-class="#{rps_map.get(rps, (rps, ''))[1]}">
+                                <t t-esc="rps_map.get(rps, (rps, ''))[0]"/>
+                            </span>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6" t-if="sale_order.project_site">
+                                <div class="text-muted small">Project Site</div>
+                                <div class="fw-semibold" t-esc="sale_order.project_site"/>
+                            </div>
+                            <div class="col-12 col-md-6" t-if="sale_order.project_type">
+                                <div class="text-muted small">Project Type</div>
+                                <div class="fw-semibold" t-esc="sale_order.project_type"/>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-2"
+                             t-if="sale_order.rfq_sent_date or sale_order.pricing_expected_date or sale_order.delivery_lead_weeks">
+                            <div class="col-12 col-md-4" t-if="sale_order.rfq_sent_date">
+                                <div class="text-muted small">RFQ Sent</div>
+                                <div class="fw-semibold"><span t-field="sale_order.rfq_sent_date" t-options='{"widget": "date"}'/></div>
+                            </div>
+                            <div class="col-12 col-md-4" t-if="sale_order.pricing_expected_date">
+                                <div class="text-muted small">Pricing Expected</div>
+                                <div class="fw-semibold"><span t-field="sale_order.pricing_expected_date" t-options='{"widget": "date"}'/></div>
+                            </div>
+                            <div class="col-12 col-md-4" t-if="sale_order.delivery_lead_weeks">
+                                <div class="text-muted small">Delivery Lead Time</div>
+                                <div class="fw-semibold"><t t-esc="sale_order.delivery_lead_weeks"/> weeks</div>
+                            </div>
+                        </div>
+                        <!-- Pricing confidence legend (client-safe: no vendor cost data) -->
+                        <div t-if="portal_cfg.show_pricing_confidence"
+                             class="mt-3 pt-3 border-top d-flex flex-wrap gap-3 small">
+                            <span class="d-inline-flex align-items-center gap-1">
+                                <span class="rounded-circle d-inline-block" style="width:0.6rem;height:0.6rem;background-color:#2563EB;"/>
+                                Catalog Price
+                            </span>
+                            <span class="d-inline-flex align-items-center gap-1">
+                                <span class="rounded-circle d-inline-block" style="width:0.6rem;height:0.6rem;background-color:#EAB308;"/>
+                                Estimated
+                            </span>
+                            <span class="d-inline-flex align-items-center gap-1">
+                                <span class="rounded-circle d-inline-block" style="width:0.6rem;height:0.6rem;background-color:#16A34A;"/>
+                                Supplier Quoted
+                            </span>
+                            <span class="d-inline-flex align-items-center gap-1">
+                                <span class="rounded-circle d-inline-block" style="width:0.6rem;height:0.6rem;background-color:#166534;"/>
+                                Locked / PO-Ready
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Per-line pricing confidence indicator next to the product name -->
+    <template id="portal_order_line_confidence" inherit_id="sale.sale_order_portal_content" name="Riven Line Pricing Confidence">
+        <xpath expr="//section[@id='details']//td[@name='td_product_name']/*[last()]" position="after">
+            <t t-if="line.pricing_confidence and line.pricing_confidence != 'catalog'">
+                <t t-set="conf_colors"
+                   t-value="{'estimated': '#EAB308', 'quoted': '#16A34A', 'locked': '#166534'}"/>
+                <div class="small d-inline-flex align-items-center gap-1">
+                    <span class="rounded-circle d-inline-block"
+                          t-attf-style="width:0.5rem;height:0.5rem;background-color:#{conf_colors.get(line.pricing_confidence, '#2563EB')};"/>
+                    <span class="text-muted"
+                          t-esc="dict(line._fields['pricing_confidence']._description_selection(request.env)).get(line.pricing_confidence, line.pricing_confidence)"/>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Document vault: client-safe attachment list on the order page -->
+    <template id="portal_order_doc_vault" inherit_id="sale.sale_order_portal_template" name="Riven Order Documents">
+        <xpath expr="//div[@id='sale_order_communication']" position="before">
+            <t t-set="portal_cfg" t-value="request.env['riven.portal.config'].sudo().get_active()"/>
+            <t t-set="vault_atts"
+               t-value="request.env['ir.attachment'].sudo().search([('res_model', '=', 'sale.order'), ('res_id', '=', sale_order.id)], order='id desc')"/>
+            <div id="riven_doc_vault" class="mt-4" t-if="portal_cfg.show_doc_vault and vault_atts">
+                <h4 class="fw-bold mb-3">Documents</h4>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Document</th>
+                                <th class="text-end">Uploaded</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="vault_atts" t-as="att">
+                                <td>
+                                    <a t-attf-href="/my/orders/#{sale_order.id}/document/#{att.id}?access_token=#{access_token or ''}">
+                                        <t t-esc="att.name"/>
+                                    </a>
+                                </td>
+                                <td class="text-end">
+                                    <span t-field="att.create_date" t-options='{"widget": "date"}'/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</riven_erp>

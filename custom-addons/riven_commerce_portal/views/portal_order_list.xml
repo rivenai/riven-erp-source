@@ -1,0 +1,17 @@
+<riven_erp>
+    <!-- Order list: status badge column on /my/orders -->
+    <template id="portal_my_orders_status" inherit_id="sale.portal_my_orders" name="Riven Order Status Badges">
+        <xpath expr="//th[@name='order_total']" position="after">
+            <th class="text-end d-none d-md-table-cell">Status</th>
+        </xpath>
+        <xpath expr="//td[@name='order_amount_total']" position="after">
+            <td class="text-end d-none d-md-table-cell">
+                <t t-set="rps" t-value="order.get_portal_display_status()"/>
+                <t t-set="rps_map" t-value="request.env['riven.portal.config'].sudo().portal_status_map()"/>
+                <span class="badge rounded-pill" t-attf-class="#{rps_map.get(rps, (rps, ''))[1]}">
+                    <t t-esc="rps_map.get(rps, (rps, ''))[0]"/>
+                </span>
+            </td>
+        </xpath>
+    </template>
+</riven_erp>

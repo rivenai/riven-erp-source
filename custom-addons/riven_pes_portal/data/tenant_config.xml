@@ -1,0 +1,15 @@
+<riven_erp>
+    <!-- PES Supply tenant configuration for the Riven Commerce Portal.
+         All PES branding values live HERE, never in the suite module. -->
+    <data noupdate="1">
+        <record id="riven_portal_config_pes" model="riven.portal.config">
+            <field name="name">PES Supply</field>
+            <field name="portal_title">PES Supply Client Portal</field>
+            <field name="primary_color">#0C882A</field>
+            <field name="secondary_color">#0F213E</field>
+            <field name="deal_room_enabled" eval="True"/>
+            <field name="show_pricing_confidence" eval="True"/>
+            <field name="show_doc_vault" eval="True"/>
+        </record>
+    </data>
+</riven_erp>
