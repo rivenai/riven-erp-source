@@ -3,22 +3,54 @@
     <template id="portal_my_home_pes" inherit_id="portal.portal_my_home"
               name="PES Portal Tiles">
         <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
-            <div class="o_portal_docs_list_links d-flex flex-column gap-1 pb-3 pt-3 flex-grow-1" groups="base.group_portal">
-                <a class="o_portal_doc_tile btn btn-light border d-flex align-items-center justify-content-between" href="/my/support">
-                    <span class="fw-bold">Support Tickets</span>
-                    <span class="text-muted">Open a ticket, track status</span>
+            <div class="o_portal_docs_list_links d-flex flex-column gap-3 pb-3 pt-3 flex-grow-1" groups="base.group_portal">
+                <a class="text-decoration-none" href="/my/support">
+                    <div class="pes-tile card border-0 shadow-sm overflow-hidden">
+                        <img class="card-img-top" style="height:180px;object-fit:cover;" src="/riven_pes_portal/static/img/hero_support.jpg" alt="Support"/>
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold d-block">Support Tickets</span>
+                                <span class="text-muted small">Open a ticket, track status</span>
+                            </div>
+                            <i class="fa fa-chevron-right text-muted"></i>
+                        </div>
+                    </div>
                 </a>
-                <a class="o_portal_doc_tile btn btn-light border d-flex align-items-center justify-content-between" href="/my/returns">
-                    <span class="fw-bold">Returns (RMA)</span>
-                    <span class="text-muted">Request a return authorization</span>
+                <a class="text-decoration-none" href="/my/returns">
+                    <div class="pes-tile card border-0 shadow-sm overflow-hidden">
+                        <img class="card-img-top" style="height:180px;object-fit:cover;" src="/riven_pes_portal/static/img/hero_returns.jpg" alt="Returns"/>
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold d-block">Returns (RMA)</span>
+                                <span class="text-muted small">Request a return authorization</span>
+                            </div>
+                            <i class="fa fa-chevron-right text-muted"></i>
+                        </div>
+                    </div>
                 </a>
-                <a class="o_portal_doc_tile btn btn-light border d-flex align-items-center justify-content-between" href="/my/warranty">
-                    <span class="fw-bold">Warranty Registrations</span>
-                    <span class="text-muted">Register products, view coverage</span>
+                <a class="text-decoration-none" href="/my/warranty">
+                    <div class="pes-tile card border-0 shadow-sm overflow-hidden">
+                        <img class="card-img-top" style="height:180px;object-fit:cover;" src="/riven_pes_portal/static/img/hero_warranty.jpg" alt="Warranty"/>
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold d-block">Warranty Registrations</span>
+                                <span class="text-muted small">Register products, view coverage</span>
+                            </div>
+                            <i class="fa fa-chevron-right text-muted"></i>
+                        </div>
+                    </div>
                 </a>
-                <a class="o_portal_doc_tile btn btn-light border d-flex align-items-center justify-content-between" href="/my/quotes">
-                    <span class="fw-bold">Request a Quote</span>
-                    <span class="text-muted">Send us your list, get a quote</span>
+                <a class="text-decoration-none" href="/my/quotes">
+                    <div class="pes-tile card border-0 shadow-sm overflow-hidden">
+                        <img class="card-img-top" style="height:180px;object-fit:cover;" src="/riven_pes_portal/static/img/hero_quotes.jpg" alt="Request a Quote"/>
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold d-block">Request a Quote</span>
+                                <span class="text-muted small">Send us your list, get a quote</span>
+                            </div>
+                            <i class="fa fa-chevron-right text-muted"></i>
+                        </div>
+                    </div>
                 </a>
             </div>
         </xpath>
@@ -31,7 +63,7 @@
             <t t-set="page_name" t-value="'support'"/>
             <div class="container pt-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h1 class="fw-bold">Support Tickets</h1>
+                    <div class="pes-hero position-relative rounded overflow-hidden mb-4" style="height:220px;"><img src="/riven_pes_portal/static/img/hero_support.jpg" alt="Support" class="w-100 h-100" style="object-fit:cover;"/><div class="position-absolute top-0 start-0 w-100 h-100" style="background:linear-gradient(rgba(6,32,16,0.72),rgba(6,32,16,0.25));"></div></div><h1 class="fw-bold">Support Tickets</h1>
                     <a class="btn btn-primary" href="/my/support/new" role="button">New Ticket</a>
                 </div>
                 <t t-if="tickets">
@@ -168,7 +200,7 @@
         <t t-call="portal.portal_layout">
             <div class="container pt-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h1 class="fw-bold">Returns (RMA)</h1>
+                    <div class="pes-hero position-relative rounded overflow-hidden mb-4" style="height:220px;"><img src="/riven_pes_portal/static/img/hero_returns.jpg" alt="Returns" class="w-100 h-100" style="object-fit:cover;"/><div class="position-absolute top-0 start-0 w-100 h-100" style="background:linear-gradient(rgba(6,32,16,0.72),rgba(6,32,16,0.25));"></div></div><h1 class="fw-bold">Returns (RMA)</h1>
                     <a class="btn btn-primary" href="/my/returns/new" role="button">Request Return</a>
                 </div>
                 <t t-if="rmas">
@@ -262,6 +294,10 @@
     <template id="portal_my_warranty" name="My Warranty Registrations">
         <t t-call="portal.portal_layout">
             <div class="container pt-4" style="max-width: 900px;">
+                <div class="pes-hero position-relative rounded overflow-hidden mb-4" style="height:220px;">
+                    <img src="/riven_pes_portal/static/img/hero_warranty.jpg" alt="Warranty" class="w-100 h-100" style="object-fit:cover;"/>
+                    <div class="position-absolute top-0 start-0 w-100 h-100" style="background:linear-gradient(rgba(6,32,16,0.72),rgba(6,32,16,0.25));"></div>
+                </div>
                 <h1 class="fw-bold mb-3">Warranty Registrations</h1>
                 <t t-if="warranties">
                     <div class="table-responsive">

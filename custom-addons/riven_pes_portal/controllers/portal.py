@@ -287,3 +287,11 @@ class PesPortalController(http.Controller):
             'page_url': '/my/vendor-rfq/%s/respond' % rfq_id,
         })
         return request.redirect('/my/vendor-rfq/%s' % rfq_id)
+
+
+class PesAboutController(http.Controller):
+    """Public About page — photorealistic rebuild (0.0.08)."""
+
+    @http.route('/about', type='http', auth='public', website=True)
+    def pes_about(self, **kw):
+        return request.render('riven_pes_portal.about_page')
