@@ -7,6 +7,9 @@
             <field name="portal_title">PES Supply Client Portal</field>
             <field name="primary_color">#0C882A</field>
             <field name="secondary_color">#0F213E</field>
+            <field name="accent_color">#11B67B</field>
+            <field name="support_email">support@pes.supply</field>
+            <field name="suite_mark_label">Riven Business Suite</field>
             <field name="deal_room_enabled" eval="True"/>
             <field name="show_pricing_confidence" eval="True"/>
             <field name="show_doc_vault" eval="True"/>

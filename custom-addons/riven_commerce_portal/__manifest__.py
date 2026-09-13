@@ -28,6 +28,7 @@ This module carries ZERO client-specific assets, strings, or colors.
     'depends': ['portal', 'sale_management', 'mail'],
     'data': [
         'security/ir.model.access.csv',
+        'views/config_views.xml',
         'views/sale_order_views.xml',
         'views/portal_order_list.xml',
         'views/portal_deal_room.xml',

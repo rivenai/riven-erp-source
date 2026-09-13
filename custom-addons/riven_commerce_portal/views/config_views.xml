@@ -1,0 +1,59 @@
+<riven_erp>
+    <!-- Action must precede menus/views that reference it -->
+    <record id="action_riven_portal_config" model="ir.actions.act_window">
+        <field name="name">Tenant Portal Configuration</field>
+        <field name="res_model">riven.portal.config</field>
+        <field name="view_mode">form,list</field>
+        <field name="help">Branding, labels, and feature flags for the Riven Commerce Portal tenant. Change these to restyle the client portal with zero code change.</field>
+    </record>
+
+    <record id="view_riven_portal_config_form" model="ir.ui.view">
+        <field name="name">riven.portal.config.form</field>
+        <field name="model">riven.portal.config</field>
+        <field name="arch" type="xml">
+            <form string="Tenant Portal Configuration">
+                <group string="Identity">
+                    <field name="name"/>
+                    <field name="company_id"/>
+                    <field name="portal_title"/>
+                    <field name="suite_mark_label"/>
+                    <field name="support_email"/>
+                </group>
+                <group string="Branding">
+                    <field name="primary_color" widget="color"/>
+                    <field name="secondary_color" widget="color"/>
+                    <field name="accent_color" widget="color"/>
+                </group>
+                <group string="Feature Flags">
+                    <field name="deal_room_enabled"/>
+                    <field name="show_pricing_confidence"/>
+                    <field name="show_doc_vault"/>
+                    <field name="show_concierge"/>
+                </group>
+                <group string="Status Labels (JSON overrides)">
+                    <field name="status_label_map" placeholder='{"pricing": "Sourcing Pricing"}'/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_riven_portal_config_tree" model="ir.ui.view">
+        <field name="name">riven.portal.config.tree</field>
+        <field name="model">riven.portal.config</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="portal_title"/>
+                <field name="deal_room_enabled"/>
+                <field name="show_concierge"/>
+            </list>
+        </field>
+    </record>
+
+    <menuitem id="menu_riven_suite" name="Riven Suite" sequence="90"/>
+    <menuitem id="menu_riven_portal_config"
+              name="Tenant Configuration"
+              parent="menu_riven_suite"
+              action="action_riven_portal_config"
+              sequence="10"/>
+</riven_erp>

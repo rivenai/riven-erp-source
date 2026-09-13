@@ -81,8 +81,8 @@
         </xpath>
     </template>
 
-    <!-- Document vault: client-safe attachment list on the order page -->
-    <template id="portal_order_doc_vault" inherit_id="sale.sale_order_portal_template" name="Riven Order Documents">
+    <!-- Document vault + config-driven suite-identity footer -->
+    <template id="portal_order_doc_vault" inherit_id="sale.sale_order_portal_template" name="Riven Order Documents &amp; Suite Footer">
         <xpath expr="//div[@id='sale_order_communication']" position="before">
             <t t-set="portal_cfg" t-value="request.env['riven.portal.config'].sudo().get_active()"/>
             <t t-set="vault_atts"
@@ -111,6 +111,20 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <!-- Suite identity footer: config-driven proof that branding is data, not code -->
+            <div id="riven_suite_footer" class="mt-4 pt-3 border-top d-flex flex-wrap align-items-center gap-2 text-muted small">
+                <span class="fw-semibold" t-attf-style="color: #{portal_cfg.primary_color};">
+                    <t t-esc="portal_cfg.portal_title"/>
+                </span>
+                <span aria-hidden="true">&#8226;</span>
+                <span t-esc="portal_cfg.suite_mark_label"/>
+                <span t-if="portal_cfg.support_email" aria-hidden="true">&#8226;</span>
+                <a t-if="portal_cfg.support_email"
+                   t-att-href="'mailto:' + portal_cfg.support_email"
+                   t-attf-style="color: #{portal_cfg.primary_color};">
+                    <t t-esc="portal_cfg.support_email"/>
+                </a>
             </div>
         </xpath>
     </template>

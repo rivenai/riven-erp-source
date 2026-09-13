@@ -17,11 +17,15 @@ class RivenPortalConfig(models.Model):
     name = fields.Char(required=True)
     company_id = fields.Many2one('res.company', string='Company')
     portal_title = fields.Char(string='Portal Title')
+    suite_mark_label = fields.Char(string='Suite Mark Label', default='Riven Business Suite')
     primary_color = fields.Char(string='Primary Color', default='#0C882A')
     secondary_color = fields.Char(string='Secondary Color', default='#0F213E')
+    accent_color = fields.Char(string='Accent Color', default='#11B67B')
+    support_email = fields.Char(string='Support Email')
     deal_room_enabled = fields.Boolean(string='Deal Room Enabled', default=True)
     show_pricing_confidence = fields.Boolean(string='Show Pricing Confidence', default=True)
     show_doc_vault = fields.Boolean(string='Show Document Vault', default=True)
+    show_concierge = fields.Boolean(string='Show Concierge Entry', default=False, help='Natural-language front door. Scaffolded surface; Cortex wiring lands in 0.0.24.')
     status_label_map = fields.Text(
         string='Status Label Overrides (JSON)',
         help='JSON dict mapping portal status keys to custom labels, '
